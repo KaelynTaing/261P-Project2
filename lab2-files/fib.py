@@ -1,6 +1,7 @@
 # explanations for member functions are provided in requirements.py
 from __future__ import annotations
 
+
 class FibNode:
     def __init__(self, val: int):
         self.val = val
@@ -20,9 +21,11 @@ class FibNode:
     def __eq__(self, other: FibNode):
         return self.val == other.val
 
+
 class FibHeap:
     def __init__(self):
         # you may define any additional member variables you need
+        self.totalNodes = 0
         self.roots = []
         pass
 
@@ -30,13 +33,30 @@ class FibHeap:
         return self.roots
 
     def insert(self, val: int) -> FibNode:
-        pass
-        
+        self.totalNodes += 1
+        newnode = FibNode(val)
+        self.roots.append(FibNode(val))
+        return newnode
+
     def delete_min(self) -> None:
-        pass
+        minnode = self.find_min()
+        for child in minnode.children:
+            self.roots.append(child)
+        
+        arr = [None] * math.log(self.totalNodes) + 1
+        for root in self.roots:
+            idx = len(root.children)
+            while arr[idx] is not None:
+                # combine root at that arr[idx] and this root and check again
+                if root.val < arr[idx].val:
+                    # make root child of arr[idx]
+                else:
+                    
+            arr[idx] = root
+
 
     def find_min(self) -> FibNode:
-        pass
+        return min(self.roots)
 
     def decrease_priority(self, node: FibNode, new_val: int) -> None:
         pass
