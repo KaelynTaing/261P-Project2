@@ -48,15 +48,34 @@ class FibHeap:
         return newnode
 
     def delete_min(self) -> None:
-        pass
+        self.remove_min()
+        self.roots.remove(self.min)
+
+        # allocate array of size M + 1
+        arr = [None] * (math.ceil(math.log(self.totalNodes)) + 1)
+
+        # all tree roots
+        roots = self.roots
+        while roots:
+            root = roots.pop()
+            degree = len(root.get_children())
+            if arr[degree] is None:
+                arr[degree] = root
+            else:
+                # merge
+                newroot = self.merge(root, arr[degree])
+                roots.append(newroot)
+                arr[degree] = None
+
+        # my own embellishment, reinstantiate self.roots - can counteract by making roots a deep copy
+        for a in arr:
+            if a is not None:
+                self.roots.append(a)
+
+        self.set_min()
+        return self.min
 
     def find_min(self) -> FibNode:
-        # minroot = self.roots[0]
-        # for root in self.roots:
-        #     if minroot.get_value_in_node() >= root.get_value_in_node():
-        #         minroot = root
-
-        # return minroot
         return self.min
 
     def decrease_priority(self, node: FibNode, new_val: int) -> None:
@@ -82,7 +101,30 @@ class FibHeap:
             if parent not in self.get_roots():
                 parent.get_flag = True
 
+    def remove_min(self):
+        for child in self.min.get_children():
+            # set flags to False
+            child.get_flag = False
+            self.roots.append(child)
 
+    def merge(self, firstnode: FibNode, secondnode: FibNode):
+        newroot = firstnode
+        if firstnode.get_value_in_node() < secondnode.get_value_in_node():
+            firstnode.get_children().append(secondnode)
+        else:
+            newroot = secondnode
+            secondnode.get_children().append(firstnode)
+
+        # return the node
+        return newroot
+
+    def set_min(self):
+        minroot = self.roots[0]
+        for root in self.roots:
+            if root.get_value_in_node() < minroot.get_value_in_node():
+                minroot = root
+        self.min = minroot
+        return minroot
 
     # feel free to define new methods in addition to the above
     # fill in the definitions of each required member function (above),
