@@ -1,5 +1,6 @@
 # explanations for member functions are provided in requirements.py
 from __future__ import annotations
+import math
 
 
 class FibNode:
@@ -25,23 +26,105 @@ class FibNode:
 class FibHeap:
     def __init__(self):
         # you may define any additional member variables you need
+        # added for log calculation
+        self.totalNodes = 0
+        # added as pointer to keep track of min node
+        self.min = None
         self.roots = []
-        pass
+        # pass
 
     def get_roots(self) -> list:
         return self.roots
 
     def insert(self, val: int) -> FibNode:
-        pass
+        self.totalNodes += 1
+        newnode = FibNode(val)
+        self.roots.append(FibNode(val))
+        if len(self.roots) == 1:
+            self.min = newnode
+        # update min
+        if newnode.get_value_in_node() < self.min.get_value_in_node():
+            self.min = newnode
+        return newnode
 
     def delete_min(self) -> None:
-        pass
+        self.remove_min()
+        self.roots.remove(self.min)
+
+        # allocate array of size M + 1
+        arr = [None] * (math.ceil(math.log(self.totalNodes)) + 1)
+
+        # all tree roots
+        roots = self.roots
+        while roots:
+            root = roots.pop()
+            degree = len(root.get_children())
+            if arr[degree] is None:
+                arr[degree] = root
+            else:
+                # merge
+                newroot = self.merge(root, arr[degree])
+                roots.append(newroot)
+                arr[degree] = None
+
+        # my own embellishment, reinstantiate self.roots - can counteract by making roots a deep copy
+        for a in arr:
+            if a is not None:
+                self.roots.append(a)
+
+        self.set_min()
+        return self.min
 
     def find_min(self) -> FibNode:
-        pass
+        return self.min
 
     def decrease_priority(self, node: FibNode, new_val: int) -> None:
-        pass
+        node.val = new_val
+        self.promote(node)
+        if node.get_value_in_node() < self.min.get_value_in_node():
+            self.min = node
+
+    def promote(self, node: FibNode) -> None:
+        # if node is root, just return
+        if node.parent is None:
+            return
+
+        parent = node.parent
+        parent.get_children().remove(node)
+        self.roots.append(node)
+        node.parent = None
+        node.get_flag = False
+
+        if parent.get_flag() is True:
+            self.promote(parent)
+        else:
+            if parent not in self.get_roots():
+                parent.get_flag = True
+
+    def remove_min(self):
+        for child in self.min.get_children():
+            # set flags to False
+            child.get_flag = False
+            self.roots.append(child)
+
+    def merge(self, firstnode: FibNode, secondnode: FibNode):
+        newroot = firstnode
+        if firstnode.get_value_in_node() < secondnode.get_value_in_node():
+            firstnode.get_children().append(secondnode)
+        else:
+            newroot = secondnode
+            secondnode.get_children().append(firstnode)
+
+        # return the node
+        return newroot
+
+    def set_min(self):
+        minroot = self.roots[0]
+        for root in self.roots:
+            if root.get_value_in_node() < minroot.get_value_in_node():
+                minroot = root
+        self.min = minroot
+        return minroot
 
     # feel free to define new methods in addition to the above
     # fill in the definitions of each required member function (above),
