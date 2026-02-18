@@ -48,29 +48,7 @@ class FibHeap:
         return newnode
 
     def delete_min(self) -> None:
-        self.remove_min()
-        self.roots.remove(self.min)
-
-        # allocate array of size M + 1
-        arr = [None] * (math.ceil(math.log(self.totalNodes)) + 1)
-
-        # all tree roots
-        roots = self.roots
-        while roots:
-            root = roots.pop()
-            degree = len(root.get_children())
-            if arr[degree] is None:
-                arr[degree] = root
-            else:
-                # merge
-                newroot = self.merge(root, arr[degree])
-                roots.append(newroot)
-                arr[degree] = None
-
-        # my own embellishment, reinstantiate self.roots - can counteract by making roots a deep copy
-        for a in arr:
-            if a is not None:
-                self.roots.append(a)
+        self.min.val = None
 
         self.set_min()
         return self.min
