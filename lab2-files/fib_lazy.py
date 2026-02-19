@@ -30,7 +30,7 @@ class FibHeap:
         self.totalNodes = 0
         # added as pointer to keep track of min node
         self.min = None
-        self.roots = []
+        self.roots = [] # list of FibNode
         # pass
 
     def get_roots(self) -> list:
@@ -50,11 +50,41 @@ class FibHeap:
     def delete_min(self) -> None:
         self.min.val = None
 
+    def find_min(self) -> FibNode:
+        if self.min.get_value_in_node() is None:
+            self.remove_vacant_nodes(self.min)
+        
+        # allocate array of size M + 1
+        arr = [None] * (math.ceil(math.log(self.totalNodes)) + 1)
+
+        # all tree roots
+        roots = self.roots
+        while roots:
+            root = roots.pop()
+            degree = len(root.get_children())
+            if arr[degree] is None:
+                arr[degree] = root
+            else:
+                # merge
+                newroot = self.merge(root, arr[degree])
+                roots.append(newroot)
+                arr[degree] = None
+
+        # my own embellishment, reinstantiate self.roots - can counteract by making roots a deep copy
+        for a in arr:
+            if a is not None:
+                self.roots.append(a)
+
         self.set_min()
         return self.min
+    
+    def remove_vacant_nodes(self, min: FibNode):
+        for child in min.get_children():
+            self.roots.append(child)
+            if child.get_value_in_node() is None:
+                self.remove_vacant_nodes(child)
+        self.roots.remove(min)
 
-    def find_min(self) -> FibNode:
-        return self.min
 
     def decrease_priority(self, node: FibNode, new_val: int) -> None:
         node.val = new_val
@@ -87,7 +117,15 @@ class FibHeap:
 
     def merge(self, firstnode: FibNode, secondnode: FibNode):
         newroot = firstnode
-        if firstnode.get_value_in_node() < secondnode.get_value_in_node():
+        # need to check for vacant node
+        if firstnode.get_value_in_node() is None:
+            newroot = firstnode
+            firstnode.get_children().append(secondnode)
+        elif secondnode.get_value_in_node() is None:
+            newroot = secondnode
+            secondnode.get_children().append(firstnode)
+        elif firstnode.get_value_in_node() < secondnode.get_value_in_node():
+            newroot = firstnode
             firstnode.get_children().append(secondnode)
         else:
             newroot = secondnode
