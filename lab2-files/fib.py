@@ -39,7 +39,7 @@ class FibHeap:
     def insert(self, val: int) -> FibNode:
         self.totalNodes += 1
         newnode = FibNode(val)
-        self.roots.append(FibNode(val))
+        self.roots.append(newnode)
         if len(self.roots) == 1:
             self.min = newnode
         # update min
@@ -52,9 +52,10 @@ class FibHeap:
         self.roots.remove(self.min)
 
         # allocate array of size M + 1
-        arr = [None] * (math.ceil(math.log(self.totalNodes)) + 1)
+        arr = [None] * (math.ceil(math.log2(self.totalNodes)) + 1)
 
         # all tree roots
+        roots = self.roots[:]  # make a copy
         roots = self.roots
         while roots:
             root = roots.pop()
@@ -78,8 +79,8 @@ class FibHeap:
         return self.min
 
     def decrease_priority(self, node: FibNode, new_val: int) -> None:
-        node.val = new_val
         self.promote(node)
+        node.val = new_val
         if node.get_value_in_node() < self.min.get_value_in_node():
             self.min = node
 
@@ -89,33 +90,34 @@ class FibHeap:
             return
 
         parent = node.parent
-        parent.get_children().remove(node)
+        if node in parent.get_children():
+            parent.get_children().remove(node)
         self.roots.append(node)
         node.parent = None
-        node.get_flag = False
+        node.flag = False
 
-        if parent.get_flag() is True:
+        if parent.get_flag() is True and parent.parent is not None:
             self.promote(parent)
         else:
-            if parent not in self.get_roots():
-                parent.get_flag = True
+            # if parent not in self.get_roots():
+            parent.flag = True
 
     def remove_min(self):
         for child in self.min.get_children():
             # set flags to False
-            child.get_flag = False
+            child.flag = False
+            child.parent = None
             self.roots.append(child)
 
     def merge(self, firstnode: FibNode, secondnode: FibNode):
-        newroot = firstnode
         if firstnode.get_value_in_node() < secondnode.get_value_in_node():
             firstnode.get_children().append(secondnode)
+            secondnode.parent = firstnode
+            return firstnode
         else:
-            newroot = secondnode
             secondnode.get_children().append(firstnode)
-
-        # return the node
-        return newroot
+            firstnode.parent = secondnode
+            return secondnode
 
     def set_min(self):
         minroot = self.roots[0]
