@@ -53,50 +53,65 @@ class FibHeapLazy:
         return newnode
 
     def delete_min_lazy(self) -> None:
-        self.min.val = None
+        if self.min is not None and self.min.get_value_in_node() is not None:
+            self.min.val = None
+            self.totalNodes -= 1
 
     def find_min_lazy(self) -> FibNode:
+        if self.min is None:
+            return None
+
         if self.min.get_value_in_node() is None:
             self.remove_vacant_nodes(self.min)
 
-            # allocate array of size M + 1
-            arr = [None] * (math.ceil(math.log2(self.totalNodes)) + 1)
+            if self.totalNodes <= 1:
+                max_degree = 2
+            else:
+                max_degree = int(1.5 * math.log2(self.totalNodes)) + 2
+
+            arr = [None] * max_degree
             roots = self.roots[:]  # make a copy!
             self.roots = []
 
             while roots:
                 root = roots.pop()
                 degree = len(root.get_children())
-                if arr[degree] is None:
-                    arr[degree] = root
-                else:
-                    # merge
-                    newroot = self.merge(root, arr[degree])
-                    roots.append(newroot)
+
+                if arr[degree] is not None:
+                    other = arr[degree]
                     arr[degree] = None
+                    root = self.merge(root, other)
+                    degree = len(root.get_children())
+
+                arr[degree] = root
 
             # my own embellishment, reinstantiate self.roots - can counteract by making roots a deep copy
             for a in arr:
                 if a is not None:
                     self.roots.append(a)
 
-            self.set_min()
+        self.set_min()
         return self.min
 
     def remove_vacant_nodes(self, min: FibNode):
-        for child in min.get_children():
+        children = list(min.get_children())
+        min.children = []
+        for child in children:
             child.parent = None
-            self.roots.append(child)
             if child.get_value_in_node() is None:
                 self.remove_vacant_nodes(child)
-        # self.roots.remove(min)
-        self.roots = [r for r in self.roots if r is not min]
+            else:
+                self.roots.append(child)
+
+        if min in self.roots:
+            self.roots.remove(min)  
 
     def decrease_priority(self, node: FibNode, new_val: int) -> None:
         self.promote(node)
         node.val = new_val
         if (
-            self.min.get_value_in_node() is None
+            self.min is None
+            or self.min.get_value_in_node() is None
             or node.get_value_in_node() < self.min.get_value_in_node()
         ):
             self.min = node
@@ -144,7 +159,7 @@ class FibHeapLazy:
             secondnode.get_children().append(firstnode)
             firstnode.parent = secondnode
             return secondnode
-
+    
     def set_min(self):
         valid_roots = [r for r in self.roots if r.get_value_in_node() is not None]
         if not valid_roots:
