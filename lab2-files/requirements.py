@@ -1,4 +1,5 @@
-from fib_lazy import FibHeap
+from fib import FibHeap
+from fib_lazy import FibHeapLazy
 
 # Please read all of the following before starting your implementation:
 #

@@ -23,7 +23,7 @@ def fib_heap_tests():
 	node = fib.insert(14)
 	fib.insert(2)
 	
-	""" if [x.val for x in fib.get_roots()] != [5, 7, 12, 14, 2]:
+	if [x.val for x in fib.get_roots()] != [5, 7, 12, 14, 2]:
 		print("fib heap contents incorrect")
 		return
 
@@ -38,7 +38,7 @@ def fib_heap_tests():
 	
 	if fib.find_min().val == 2:
 		print("error: min val should have changed")
-		return """
+		return
 	
 	fib.decrease_priority(node, 1)
 	if fib.find_min().val != 1:

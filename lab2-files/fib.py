@@ -73,7 +73,6 @@ class FibHeap:
                 self.roots.append(a)
 
         self.set_min()
-        return self.min
 
     def find_min(self) -> FibNode:
         return self.min

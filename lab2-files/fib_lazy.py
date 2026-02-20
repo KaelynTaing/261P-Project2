@@ -23,7 +23,7 @@ class FibNode:
         return self.val == other.val
 
 
-class FibHeap:
+class FibHeapLazy:
     def __init__(self):
         # you may define any additional member variables you need
         # added for log calculation
